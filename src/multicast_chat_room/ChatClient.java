@@ -36,8 +36,6 @@ public class ChatClient {
     private DataOutputStream streamOut = null;
     private ChatClientThread client    = null;
 
-    boolean first_login = true;
-
 
     public ChatClient() {
 
@@ -57,14 +55,13 @@ public class ChatClient {
 
                 try {
                     socket = new Socket(serverName, serverPort);
-                    appendChatMsg("Connected: " + socket);
                     open();
                     send("$name:" + nickname);
 
                 } catch (UnknownHostException uhe) {
-                    appendChatMsg("Host unknown: " + uhe.getMessage());
+                    display("Host unknown: " + uhe.getMessage());
                 } catch (IOException ioe) {
-                    appendChatMsg("Unexpected exception: " + ioe.getMessage());
+                    display("Unexpected exception: " + ioe.getMessage());
                 }
 
                 connect.setEnabled(false);
@@ -107,7 +104,7 @@ public class ChatClient {
             streamOut.flush();
             inputField.setText("");
         } catch (IOException ioe) {
-            appendChatMsg("Sending error: " + ioe.getMessage());
+            display("Sending error: " + ioe.getMessage());
             close();
         }
     }
@@ -120,7 +117,7 @@ public class ChatClient {
             streamOut.flush();
             inputField.setText("");
         } catch (IOException ioe) {
-            appendChatMsg("Sending error: " + ioe.getMessage());
+            display("Sending error: " + ioe.getMessage());
             close();
         }
     }
@@ -132,14 +129,14 @@ public class ChatClient {
             if (streamOut != null) streamOut.close();
             if (socket != null) socket.close();
         } catch (IOException ioe) {
-            appendChatMsg("Error closing ...");
+            display("Error closing ...");
         }
         client.close();
         client.stop();
     }
 
 
-    public void appendChatMsg(String msg) {
+    public void display(String msg) {
 
         chatArea.append(msg);
         chatArea.append("\n");
@@ -152,13 +149,13 @@ public class ChatClient {
             streamOut = new DataOutputStream(socket.getOutputStream());
             client = new ChatClientThread(this, socket);
         } catch (IOException ioe) {
-            appendChatMsg("Error opening output stream: " + ioe);
+            display("Error opening output stream: " + ioe);
         }
     }
 
 
     public void handle(String msg) {
-        appendChatMsg(msg);
+        display(msg);
         System.out.println(msg);
     }
 

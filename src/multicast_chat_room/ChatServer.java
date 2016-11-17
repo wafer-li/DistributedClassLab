@@ -62,7 +62,8 @@ public class ChatServer implements Runnable {
             try {
                 display("Waiting for a client ...");
                 addThread(server.accept());
-            } catch (IOException ioe) {
+            }
+            catch (IOException ioe) {
                 display("Server accept error: " + ioe);
                 stop();
             }
@@ -91,13 +92,14 @@ public class ChatServer implements Runnable {
     private void open(int port) {
 
         if (server == null) {
-
             try {
                 display("Binding to port " + port + ", please wait  ...");
                 server = new ServerSocket(port);
+
                 display("Server started: " + server);
                 start();
-            } catch (IOException ioe) {
+            }
+            catch (IOException ioe) {
                 display("Can not bind to port " + port + ": " + ioe.getMessage());
             }
         }
@@ -115,7 +117,8 @@ public class ChatServer implements Runnable {
                 server.close();
                 server = null;
                 removeAll();
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
 
@@ -125,25 +128,34 @@ public class ChatServer implements Runnable {
 
     private int findClient(int ID) {
 
-        for (int i = 0; i < clientCount; i++)
-            if (clients.get(i).getID() == ID)
+        for (int i = 0; i < clientCount; i++) {
+
+            if (clients.get(i).getID() == ID) {
                 return i;
+            }
+        }
         return -1;
     }
 
 
     synchronized void handle(int ID, String input) {
 
+        ChatServerThread currentClient = clients.get(findClient(ID));
+
         if (input.equals(".bye")) {
 
             for (ChatServerThread client : clients) {
-                client.send(clients.get(findClient(ID)).getNickName() + " quit");
+                client.send(currentClient.getNickName() + " quit!");
             }
 
             remove(ID);
         }
         else if (input.contains("$name:")) {
-            clients.get(findClient(ID)).setNickName(input.substring(6));
+            currentClient.setNickName(input.substring(6));
+
+            for (ChatServerThread client : clients) {
+                client.send(currentClient.getNickName() + " come!");
+            }
         }
         else {
             for (ChatServerThread client : clients) {
@@ -154,6 +166,7 @@ public class ChatServer implements Runnable {
 
 
     public void display(String msg) {
+
         msgArea.append(msg);
         msgArea.append("\n");
     }
@@ -179,7 +192,8 @@ public class ChatServer implements Runnable {
 
             try {
                 toTerminate.close();
-            } catch (IOException ioe) {
+            }
+            catch (IOException ioe) {
                 display("Error closing thread: " + ioe);
             }
 
@@ -191,7 +205,6 @@ public class ChatServer implements Runnable {
     private void removeAll() {
 
         clients.forEach(Thread::stop);
-
         clients.clear();
     }
 
@@ -201,18 +214,20 @@ public class ChatServer implements Runnable {
         if (clientCount < 50) {
 
             display("Client accepted: " + socket);
-
             clients.add(new ChatServerThread(this, socket));
+
             try {
                 clients.get(clientCount).open();
                 clients.get(clientCount).start();
                 clientCount++;
-            } catch (IOException ioe) {
+            }
+            catch (IOException ioe) {
                 display("Error opening thread: " + ioe);
             }
         }
-        else
+        else {
             display("Client refused: maximum " + 50 + " reached.");
+        }
     }
 
 

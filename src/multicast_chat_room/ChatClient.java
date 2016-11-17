@@ -85,8 +85,12 @@ public class ChatClient {
                 close();
 
                 disconnect.setEnabled(false);
-                connect.setEnabled(true);
                 inputField.setEnabled(false);
+
+                connect.setEnabled(true);
+                ipField.setEnabled(true);
+                portField.setEnabled(true);
+                nameField.setEnabled(true);
             }
         });
 

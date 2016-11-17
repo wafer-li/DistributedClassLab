@@ -10,10 +10,10 @@ public class ChatClientThread extends Thread {
     private DataInputStream streamIn = null;
 
 
-    public ChatClientThread(ChatClient _client, Socket _socket) {
+    public ChatClientThread(ChatClient client, Socket socket) {
 
-        client = _client;
-        socket = _socket;
+        this.client = client;
+        this.socket = socket;
         open();
         start();
     }

@@ -14,11 +14,11 @@ public class ChatServerThread extends Thread {
     private String nickName;
 
 
-    public ChatServerThread(ChatServer _server, Socket _socket) {
+    public ChatServerThread(ChatServer server, Socket socket) {
 
         super();
-        server = _server;
-        socket = _socket;
+        this.server = server;
+        this.socket = socket;
         ID = socket.getPort();
     }
 

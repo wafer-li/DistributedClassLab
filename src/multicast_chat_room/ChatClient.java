@@ -38,6 +38,7 @@ public class ChatClient {
 
     boolean first_login = true;
 
+
     public ChatClient() {
 
         initListener();
@@ -52,18 +53,18 @@ public class ChatClient {
 
                 String serverName = ipField.getText();
                 int    serverPort = Integer.parseInt(portField.getText());
-                String nickname = nameField.getText();
+                String nickname   = nameField.getText();
 
                 try {
                     socket = new Socket(serverName, serverPort);
                     appendChatMsg("Connected: " + socket);
                     open();
-                    send(nickname);
+                    send("$name:" + nickname);
 
                 } catch (UnknownHostException uhe) {
-                    System.out.println("Host unknown: " + uhe.getMessage());
+                    appendChatMsg("Host unknown: " + uhe.getMessage());
                 } catch (IOException ioe) {
-                    System.out.println("Unexpected exception: " + ioe.getMessage());
+                    appendChatMsg("Unexpected exception: " + ioe.getMessage());
                 }
 
                 connect.setEnabled(false);
@@ -80,7 +81,7 @@ public class ChatClient {
         disconnect.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                send(".bye");
                 close();
 
                 disconnect.setEnabled(false);
@@ -92,15 +93,17 @@ public class ChatClient {
         inputField.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
                 send();
             }
         });
     }
 
-    private void send(String nickname) {
+
+    private void send(String msg) {
 
         try {
-            streamOut.writeUTF("$name:" + nickname);
+            streamOut.writeUTF(msg);
             streamOut.flush();
             inputField.setText("");
         } catch (IOException ioe) {
@@ -143,8 +146,6 @@ public class ChatClient {
     }
 
 
-
-
     public void open() {
 
         try {
@@ -157,17 +158,9 @@ public class ChatClient {
 
 
     public void handle(String msg) {
-
-        if (msg.equals(".bye")) {
-            System.out.println("Good bye. Press RETURN to exit ...");
-            close();
-        }
-        else
-            appendChatMsg(msg);
-            System.out.println(msg);
+        appendChatMsg(msg);
+        System.out.println(msg);
     }
-
-
 
 
     public static void main(String[] args) {

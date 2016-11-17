@@ -11,7 +11,7 @@ public class ChatServer implements Runnable {
     private int              clientCount = 0;
 
 
-    public ChatServer(int port) {
+    private ChatServer(int port) {
 
         try {
             System.out.println("Binding to port " + port + ", please wait  ...");
@@ -38,7 +38,7 @@ public class ChatServer implements Runnable {
     }
 
 
-    public void start() {
+    private void start() {
 
         if (thread == null) {
             thread = new Thread(this);
@@ -47,7 +47,7 @@ public class ChatServer implements Runnable {
     }
 
 
-    public void stop() {
+    private void stop() {
 
         if (thread != null) {
             thread.stop();
@@ -65,36 +65,49 @@ public class ChatServer implements Runnable {
     }
 
 
-    public synchronized void handle(int ID, String input) {
+    synchronized void handle(int ID, String input) {
 
         if (input.equals(".bye")) {
-            clients[findClient(ID)].send(".bye");
+
+            for (ChatServerThread client : clients) {
+                client.send(clients[findClient(ID)].getNickName() + "quit");
+            }
+
             remove(ID);
         }
         else if (input.contains("$name:")) {
             clients[findClient(ID)].setNickName(input.substring(6));
         }
-        else
-            for (int i = 0; i < clientCount; i++)
-                clients[i].send(clients[findClient(ID)].getNickName() + ": " + input);
+        else {
+            for (ChatServerThread client : clients) {
+                client.send(clients[findClient(ID)].getNickName() + ": " + input);
+            }
+        }
     }
 
 
-    public synchronized void remove(int ID) {
+    synchronized void remove(int ID) {
 
         int pos = findClient(ID);
+
         if (pos >= 0) {
+
             ChatServerThread toTerminate = clients[pos];
+
             System.out.println("Removing client thread " + ID + " at " + pos);
-            if (pos < clientCount - 1)
-                for (int i = pos + 1; i < clientCount; i++)
-                    clients[i - 1] = clients[i];
+
+            if (pos < clientCount - 1) {
+                System.arraycopy(clients, pos + 1, clients, pos + 1 - 1, clientCount - (pos + 1));
+            }
+
             clientCount--;
+
             try {
                 toTerminate.close();
             } catch (IOException ioe) {
                 System.out.println("Error closing thread: " + ioe);
             }
+
             toTerminate.stop();
         }
     }
@@ -120,10 +133,11 @@ public class ChatServer implements Runnable {
 
     public static void main(String args[]) {
 
-        ChatServer server = null;
-        if (args.length != 1)
+        if (args.length != 1) {
             System.out.println("Usage: java ChatServer port");
-        else
-            server = new ChatServer(Integer.parseInt(args[0]));
+        }
+        else {
+            new ChatServer(Integer.parseInt(args[0]));
+        }
     }
 }

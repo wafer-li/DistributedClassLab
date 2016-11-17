@@ -41,8 +41,10 @@ public class ChatServer implements Runnable {
             public void actionPerformed(ActionEvent e) {
 
                 int port = Integer.parseInt(portField.getText());
-
                 open(port);
+
+                openServer.setEnabled(false);
+                portField.setEnabled(false);
             }
         });
 
@@ -51,6 +53,10 @@ public class ChatServer implements Runnable {
             public void actionPerformed(ActionEvent e) {
 
                 close();
+
+                openServer.setEnabled(true);
+                portField.setEnabled(true);
+                stopServer.setEnabled(false);
             }
         });
     }

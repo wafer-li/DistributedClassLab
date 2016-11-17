@@ -16,9 +16,9 @@ import javax.swing.JTextField;
 public class ChatServer implements Runnable {
 
     private List<ChatServerThread> clients     = new ArrayList<>(50);
-    private ServerSocket server      = null;
-    private Thread       thread      = null;
-    private int          clientCount = 0;
+    private ServerSocket           server      = null;
+    private Thread                 thread      = null;
+    private int                    clientCount = 0;
 
 
     private JPanel     window;
@@ -27,9 +27,12 @@ public class ChatServer implements Runnable {
     private JTextArea  msgArea;
     private JButton    stopServer;
 
+
     private ChatServer() {
+
         initListener();
     }
+
 
     private void initListener() {
 
@@ -46,6 +49,7 @@ public class ChatServer implements Runnable {
         stopServer.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
                 close();
             }
         });
@@ -56,10 +60,10 @@ public class ChatServer implements Runnable {
 
         while (thread != null) {
             try {
-                System.out.println("Waiting for a client ...");
+                display("Waiting for a client ...");
                 addThread(server.accept());
             } catch (IOException ioe) {
-                System.out.println("Server accept error: " + ioe);
+                display("Server accept error: " + ioe);
                 stop();
             }
         }
@@ -83,24 +87,28 @@ public class ChatServer implements Runnable {
         }
     }
 
+
     private void open(int port) {
+
         if (server == null) {
 
-                try {
-                    System.out.println("Binding to port " + port + ", please wait  ...");
-                    server = new ServerSocket(port);
-                    System.out.println("Server started: " + server);
-                    start();
-                } catch (IOException ioe) {
-                    System.out.println("Can not bind to port " + port + ": " + ioe.getMessage());
-                }
+            try {
+                display("Binding to port " + port + ", please wait  ...");
+                server = new ServerSocket(port);
+                display("Server started: " + server);
+                start();
+            } catch (IOException ioe) {
+                display("Can not bind to port " + port + ": " + ioe.getMessage());
+            }
         }
     }
 
+
     private void close() {
+
         if (server != null) {
 
-            System.out.println("Server closed.");
+            display("Server closed.");
 
             try {
                 stop();
@@ -113,6 +121,7 @@ public class ChatServer implements Runnable {
 
         }
     }
+
 
     private int findClient(int ID) {
 
@@ -128,7 +137,7 @@ public class ChatServer implements Runnable {
         if (input.equals(".bye")) {
 
             for (ChatServerThread client : clients) {
-                client.send(clients.get(findClient(ID)).getNickName() + "quit");
+                client.send(clients.get(findClient(ID)).getNickName() + " quit");
             }
 
             remove(ID);
@@ -144,6 +153,12 @@ public class ChatServer implements Runnable {
     }
 
 
+    public void display(String msg) {
+        msgArea.append(msg);
+        msgArea.append("\n");
+    }
+
+
     synchronized void remove(int ID) {
 
         int pos = findClient(ID);
@@ -152,7 +167,9 @@ public class ChatServer implements Runnable {
 
             ChatServerThread toTerminate = clients.get(pos);
 
-            System.out.println("Removing client thread " + ID + " at " + pos);
+
+            display("Removing client thread " + ID + " at " + pos);
+
 
             if (pos < clientCount - 1) {
                 clients.remove(pos);
@@ -163,7 +180,7 @@ public class ChatServer implements Runnable {
             try {
                 toTerminate.close();
             } catch (IOException ioe) {
-                System.out.println("Error closing thread: " + ioe);
+                display("Error closing thread: " + ioe);
             }
 
             toTerminate.stop();
@@ -182,7 +199,8 @@ public class ChatServer implements Runnable {
     private void addThread(Socket socket) {
 
         if (clientCount < 50) {
-            System.out.println("Client accepted: " + socket);
+
+            display("Client accepted: " + socket);
 
             clients.add(new ChatServerThread(this, socket));
             try {
@@ -190,11 +208,11 @@ public class ChatServer implements Runnable {
                 clients.get(clientCount).start();
                 clientCount++;
             } catch (IOException ioe) {
-                System.out.println("Error opening thread: " + ioe);
+                display("Error opening thread: " + ioe);
             }
         }
         else
-            System.out.println("Client refused: maximum " + 50 + " reached.");
+            display("Client refused: maximum " + 50 + " reached.");
     }
 
 

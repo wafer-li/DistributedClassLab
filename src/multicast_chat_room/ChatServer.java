@@ -1,26 +1,54 @@
 package multicast_chat_room;
 
+import java.awt.event.ActionEvent;
 import java.net.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 public class ChatServer implements Runnable {
 
-    private ChatServerThread clients[]   = new ChatServerThread[50];
-    private ServerSocket     server      = null;
-    private Thread           thread      = null;
-    private int              clientCount = 0;
+    private List<ChatServerThread> clients     = new ArrayList<>(50);
+    private ServerSocket server      = null;
+    private Thread       thread      = null;
+    private int          clientCount = 0;
 
 
-    private ChatServer(int port) {
+    private JPanel     window;
+    private JTextField portField;
+    private JButton    openServer;
+    private JTextArea  msgArea;
+    private JButton    stopServer;
 
-        try {
-            System.out.println("Binding to port " + port + ", please wait  ...");
-            server = new ServerSocket(port);
-            System.out.println("Server started: " + server);
-            start();
-        } catch (IOException ioe) {
-            System.out.println("Can not bind to port " + port + ": " + ioe.getMessage());
-        }
+    private ChatServer() {
+        initListener();
+    }
+
+    private void initListener() {
+
+        openServer.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                int port = Integer.parseInt(portField.getText());
+
+                open(port);
+            }
+        });
+
+        stopServer.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
     }
 
 
@@ -55,11 +83,41 @@ public class ChatServer implements Runnable {
         }
     }
 
+    private void open(int port) {
+        if (server == null) {
+
+                try {
+                    System.out.println("Binding to port " + port + ", please wait  ...");
+                    server = new ServerSocket(port);
+                    System.out.println("Server started: " + server);
+                    start();
+                } catch (IOException ioe) {
+                    System.out.println("Can not bind to port " + port + ": " + ioe.getMessage());
+                }
+        }
+    }
+
+    private void close() {
+        if (server != null) {
+
+            System.out.println("Server closed.");
+
+            try {
+                stop();
+                server.close();
+                server = null;
+                removeAll();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
 
     private int findClient(int ID) {
 
         for (int i = 0; i < clientCount; i++)
-            if (clients[i].getID() == ID)
+            if (clients.get(i).getID() == ID)
                 return i;
         return -1;
     }
@@ -70,17 +128,17 @@ public class ChatServer implements Runnable {
         if (input.equals(".bye")) {
 
             for (ChatServerThread client : clients) {
-                client.send(clients[findClient(ID)].getNickName() + "quit");
+                client.send(clients.get(findClient(ID)).getNickName() + "quit");
             }
 
             remove(ID);
         }
         else if (input.contains("$name:")) {
-            clients[findClient(ID)].setNickName(input.substring(6));
+            clients.get(findClient(ID)).setNickName(input.substring(6));
         }
         else {
             for (ChatServerThread client : clients) {
-                client.send(clients[findClient(ID)].getNickName() + ": " + input);
+                client.send(clients.get(findClient(ID)).getNickName() + ": " + input);
             }
         }
     }
@@ -92,12 +150,12 @@ public class ChatServer implements Runnable {
 
         if (pos >= 0) {
 
-            ChatServerThread toTerminate = clients[pos];
+            ChatServerThread toTerminate = clients.get(pos);
 
             System.out.println("Removing client thread " + ID + " at " + pos);
 
             if (pos < clientCount - 1) {
-                System.arraycopy(clients, pos + 1, clients, pos + 1 - 1, clientCount - (pos + 1));
+                clients.remove(pos);
             }
 
             clientCount--;
@@ -113,31 +171,39 @@ public class ChatServer implements Runnable {
     }
 
 
+    private void removeAll() {
+
+        clients.forEach(Thread::stop);
+
+        clients.clear();
+    }
+
+
     private void addThread(Socket socket) {
 
-        if (clientCount < clients.length) {
+        if (clientCount < 50) {
             System.out.println("Client accepted: " + socket);
-            clients[clientCount] = new ChatServerThread(this, socket);
+
+            clients.add(new ChatServerThread(this, socket));
             try {
-                clients[clientCount].open();
-                clients[clientCount].start();
+                clients.get(clientCount).open();
+                clients.get(clientCount).start();
                 clientCount++;
             } catch (IOException ioe) {
                 System.out.println("Error opening thread: " + ioe);
             }
         }
         else
-            System.out.println("Client refused: maximum " + clients.length + " reached.");
+            System.out.println("Client refused: maximum " + 50 + " reached.");
     }
 
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
 
-        if (args.length != 1) {
-            System.out.println("Usage: java ChatServer port");
-        }
-        else {
-            new ChatServer(Integer.parseInt(args[0]));
-        }
+        JFrame frame = new JFrame("ChatServer");
+        frame.setContentPane(new ChatServer().window);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
     }
 }

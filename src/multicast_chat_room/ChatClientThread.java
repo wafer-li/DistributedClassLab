@@ -23,8 +23,9 @@ public class ChatClientThread extends Thread {
 
         try {
             streamIn = new DataInputStream(socket.getInputStream());
-        } catch (IOException ioe) {
-            System.out.println("Error getting input stream: " + ioe);
+        }
+        catch (IOException ioe) {
+            client.display("Error getting input stream: " + ioe);
             client.close();
         }
     }
@@ -33,9 +34,12 @@ public class ChatClientThread extends Thread {
     public void close() {
 
         try {
-            if (streamIn != null) streamIn.close();
-        } catch (IOException ioe) {
-            System.out.println("Error closing input stream: " + ioe);
+            if (streamIn != null) {
+                streamIn.close();
+            }
+        }
+        catch (IOException ioe) {
+            client.display("Error closing input stream: " + ioe);
         }
     }
 
@@ -43,10 +47,12 @@ public class ChatClientThread extends Thread {
     public void run() {
 
         while (true) {
+
             try {
                 client.handle(streamIn.readUTF());
-            } catch (IOException ioe) {
-                System.out.println("Listening error: " + ioe.getMessage());
+            }
+            catch (IOException ioe) {
+                client.display("Listening error: " + ioe.getMessage());
                 client.close();
             }
         }

@@ -58,9 +58,11 @@ public class ChatClient {
                     open();
                     send("$name:" + nickname);
 
-                } catch (UnknownHostException uhe) {
+                }
+                catch (UnknownHostException uhe) {
                     display("Host unknown: " + uhe.getMessage());
-                } catch (IOException ioe) {
+                }
+                catch (IOException ioe) {
                     display("Unexpected exception: " + ioe.getMessage());
                 }
 
@@ -78,6 +80,7 @@ public class ChatClient {
         disconnect.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
                 send(".bye");
                 close();
 
@@ -103,7 +106,8 @@ public class ChatClient {
             streamOut.writeUTF(msg);
             streamOut.flush();
             inputField.setText("");
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             display("Sending error: " + ioe.getMessage());
             close();
         }
@@ -116,7 +120,8 @@ public class ChatClient {
             streamOut.writeUTF(inputField.getText());
             streamOut.flush();
             inputField.setText("");
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             display("Sending error: " + ioe.getMessage());
             close();
         }
@@ -126,11 +131,19 @@ public class ChatClient {
     public void close() {
 
         try {
-            if (streamOut != null) streamOut.close();
-            if (socket != null) socket.close();
-        } catch (IOException ioe) {
+
+            if (streamOut != null) {
+                streamOut.close();
+            }
+
+            if (socket != null) {
+                socket.close();
+            }
+        }
+        catch (IOException ioe) {
             display("Error closing ...");
         }
+
         client.close();
         client.stop();
     }
@@ -148,13 +161,15 @@ public class ChatClient {
         try {
             streamOut = new DataOutputStream(socket.getOutputStream());
             client = new ChatClientThread(this, socket);
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             display("Error opening output stream: " + ioe);
         }
     }
 
 
     public void handle(String msg) {
+
         display(msg);
         System.out.println(msg);
     }

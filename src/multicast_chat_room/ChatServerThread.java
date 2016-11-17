@@ -13,6 +13,7 @@ public class ChatServerThread extends Thread {
 
     private String nickName;
 
+
     public ChatServerThread(ChatServer _server, Socket _socket) {
 
         super();
@@ -27,8 +28,9 @@ public class ChatServerThread extends Thread {
         try {
             streamOut.writeUTF(msg);
             streamOut.flush();
-        } catch (IOException ioe) {
-            System.out.println(ID + " ERROR sending: " + ioe.getMessage());
+        }
+        catch (IOException ioe) {
+            server.display(ID + " ERROR sending: " + ioe.getMessage());
             server.remove(ID);
             stop();
         }
@@ -43,12 +45,14 @@ public class ChatServerThread extends Thread {
 
     public void run() {
 
-        System.out.println("Server Thread " + ID + " running.");
+        server.display("Server Thread " + ID + " running.");
+
         while (true) {
             try {
                 server.handle(ID, streamIn.readUTF());
-            } catch (IOException ioe) {
-                System.out.println(ID + " ERROR reading: " + ioe.getMessage());
+            }
+            catch (IOException ioe) {
+                server.display(ID + " ERROR reading: " + ioe.getMessage());
                 server.remove(ID);
                 stop();
             }
@@ -58,18 +62,25 @@ public class ChatServerThread extends Thread {
 
     public void open() throws IOException {
 
-        streamIn = new DataInputStream(new
-                                               BufferedInputStream(socket.getInputStream()));
-        streamOut = new DataOutputStream(new
-                                                 BufferedOutputStream(socket.getOutputStream()));
+        streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+
+        streamOut = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
     }
 
 
     public void close() throws IOException {
 
-        if (socket != null) socket.close();
-        if (streamIn != null) streamIn.close();
-        if (streamOut != null) streamOut.close();
+        if (socket != null) {
+            socket.close();
+        }
+
+        if (streamIn != null) {
+            streamIn.close();
+        }
+
+        if (streamOut != null) {
+            streamOut.close();
+        }
     }
 
 
